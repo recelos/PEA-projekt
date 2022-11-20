@@ -7,6 +7,8 @@ namespace TravelingSalesmanProblem;
 
 public class ConsoleMenu
 {
+  private const string GraphDirectory = "graphs";
+  
   public void Show()
   {
     Console.WriteLine("Wybierz rodzaj operacji:");
@@ -34,7 +36,7 @@ public class ConsoleMenu
   
   private void ReadFromFile()
   {
-    var files = FileSystem.GetFiles("graphs");
+    var files = FileSystem.GetFiles(GraphDirectory);
 
     Console.WriteLine("Wybierz plik:");
     var i = 1;
@@ -47,20 +49,15 @@ public class ConsoleMenu
     
     if (success && files.IsInRange(chosenFile - 1))
     {
-      var graph = new Graph(files[chosenFile - 1]);
+      var graph = GraphFactory.ReadFromFile(files[chosenFile - 1]);
       graph.Print();
-      
-      var algo = new BruteForce();
-      
-      var (xd, xdd) = algo.Solve(graph, 0);
 
-      Console.WriteLine($"\nNajkrotsza droga: {xd}\n");
-      Console.WriteLine($"Droga: {xdd.CombineToString()}");
-      
-      
-      var results = Benchmark.Measure(algo, graph, 10);
+      var (weight, path) = new BranchAndBound(graph).Solve(0);
 
-      PrintAndWait($"Sredni czas: {results.Average()}ms.");
+      Console.WriteLine($"\nNajkrotsza droga: {weight}\n");
+      Console.WriteLine($"Droga: {path.CombineToString()}");
+      Console.ReadKey();
+
     }
     else
     {
@@ -77,12 +74,15 @@ public class ConsoleMenu
     
     if (success && size is > 0 and < 21)
     {
-      var graph = GraphFactory.Generate(size, size);
+      var graph = GraphFactory.GenerateRandom(20, size);
       graph.Print();
+      
+      var (weight, path) = new BranchAndBound(graph).Solve(0);
 
-      var results = Benchmark.Measure(new BruteForce(), graph, 10);
-
-      PrintAndWait($"\nSredni czas: {results.Average()}ms.");
+      Console.WriteLine($"\nNajkrotsza droga: {weight}\n");
+      Console.WriteLine($"Droga: {path.CombineToString()}");
+      Console.ReadKey();
+      
     }
     else
     {

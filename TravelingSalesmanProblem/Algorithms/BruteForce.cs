@@ -5,14 +5,20 @@ namespace TravelingSalesmanProblem.Algorithms;
 
 public class BruteForce : ITspAlgorithm
 {
-  public (int, List<int>) Solve(Graph graph, int start)
+  private readonly Graph _graph;
+  
+  public BruteForce(Graph graph)
+  {
+    _graph = graph;
+  }
+  public (int, List<int>) Solve(int start)
   {
     var outputWeight = int.MaxValue;
-    var outputPath = new List<int>();
+    List<int>? outputPath = null;
     var permutation = new List<int>();
     
     // dodaj wszystkie krawedzie oprocz krawedzi startowej
-    for(var i = 0; i < graph.Size; i++)
+    for(var i = 0; i < _graph.Size; i++)
     {
       if (i != start)
       {
@@ -29,46 +35,49 @@ public class BruteForce : ITspAlgorithm
       // zsumowanie wag krawedzi
       foreach (var vertex in permutation)
       {
-        currentWeight += graph.AdjacencyMatrix[currentVertex][vertex];
+        currentWeight += _graph.AdjacencyMatrix[currentVertex][vertex];
         currentVertex = vertex;
       }
       // dodanie wagi krawedzi z ostatniego wierzcholka ostatniego do startu sciezki
-      currentWeight += graph.AdjacencyMatrix[currentVertex][start];
+      currentWeight += _graph.AdjacencyMatrix[currentVertex][start];
 
       // ustawienie wagi obecnie przeliczonej drogi jesli jest mniejsza od poprzedniej
       if(outputWeight > currentWeight)
       {
         outputWeight = currentWeight;
-        outputPath = new List<int>(permutation);
-        outputPath.Insert(0, start);
-        outputPath.Add(start);
+        outputPath = new List<int>(permutation) { start };
       }
 
       // ustawienie nowej permutacji (jesli istnieje)
       hasNextPermutation = FindNextPermutation(permutation);
     }
-    return (outputWeight, outputPath);
+    return (outputWeight, outputPath ?? new List<int>());
   }
   
-  // generowanie następnej permutacji poprzez porzadek leksykograficzny
   private static bool FindNextPermutation(IList<int> input)
   {
     if(input.Count <= 1) return false;
-    var i = input.Count - 2;
+    var k = input.Count - 2;
 
-    while (i >= 0 && input[i] >= input[i + 1])
+    while (k >= 0 && input[k] >= input[k + 1])
     {
-      i--;
+      k--;
     }
 
-    if (i < 0)
+    if (k < 0)
+    {
       return false;
+    }
 
-    var j = input.Count - 1;
-    while (input[j] <= input[i]) j--;
+    var l = input.Count - 1;
+    
+    while (input[l] <= input[k])
+    {
+      l--;
+    }
 
-    input.Swap(i, j);
-    input.ReverseSubList(i + 1, input.Count - 1);
+    input.Swap(k, l);
+    input.ReverseSubList(k + 1, input.Count - 1);
     return true;
   }
 }

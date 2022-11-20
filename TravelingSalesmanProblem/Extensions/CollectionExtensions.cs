@@ -11,6 +11,9 @@ public static class CollectionExtensions
   public static void Swap<T>(this IList<T> list, int left, int right)
     => (list[left], list[right]) = (list[right], list[left]);
 
+  public static int[][] DeepCopy(this int[][] input)
+    => input.Select(m => m.ToArray()).ToArray();
+  
   public static void ReverseSubList<T>(this IList<T> list, int left, int right)
   {
     while (left < right)

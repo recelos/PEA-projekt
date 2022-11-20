@@ -25,7 +25,7 @@ public static class Benchmark
   {
     var stopwatch = new Stopwatch();
     stopwatch.Start();
-    algorithm.Solve(graph, 0);
+    algorithm.Solve(0);
     stopwatch.Stop();
     output.Add(stopwatch.ElapsedMilliseconds);
   }
