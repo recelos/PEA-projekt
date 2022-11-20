@@ -1,5 +1,6 @@
-﻿using DataStructures;
-using Microsoft.VisualBasic.FileIO;
+﻿using System;
+using System.IO;
+using DataStructures;
 using TravelingSalesmanProblem.Algorithms;
 using TravelingSalesmanProblem.Extensions;
 
@@ -36,7 +37,7 @@ public class ConsoleMenu
   
   private void ReadFromFile()
   {
-    var files = FileSystem.GetFiles(GraphDirectory);
+    var files = Directory.GetFiles(GraphDirectory);
 
     Console.WriteLine("Wybierz plik:");
     var i = 1;

@@ -1,4 +1,6 @@
-﻿namespace TravelingSalesmanProblem.Algorithms;
+﻿using System.Collections.Generic;
+
+namespace TravelingSalesmanProblem.Algorithms;
 
 public interface ITspAlgorithm
 {

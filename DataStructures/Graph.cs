@@ -1,4 +1,6 @@
-﻿namespace DataStructures;
+﻿using System;
+
+namespace DataStructures;
 
 public class Graph
 {
