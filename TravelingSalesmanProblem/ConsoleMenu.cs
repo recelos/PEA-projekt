@@ -53,17 +53,18 @@ public class ConsoleMenu
       var graph = GraphFactory.ReadFromFile(files[chosenFile - 1]);
       graph.Print();
 
-      var (weight, path) = new BranchAndBound(graph).Solve(0);
+      var (weight, path) = new BranchAndBound(graph).Solve(1);
 
       Console.WriteLine($"\nNajkrotsza droga: {weight}\n");
       Console.WriteLine($"Droga: {path.CombineToString()}");
+      Console.WriteLine("\nWcisnij dowolny klawisz by kontynuowac...");
       Console.ReadKey();
-
+      
     }
     else
     {
       Console.WriteLine("Podany plik nie istnieje");
-      Console.ReadLine();
+      Console.ReadKey();
     }
   }
   
@@ -95,7 +96,7 @@ public class ConsoleMenu
   {
     Console.WriteLine(text);
     Console.WriteLine("Wcisnij dowolny klawisz by kontynuowac");
-    Console.ReadLine();
+    Console.ReadKey();
   }
 }
 
