@@ -5,7 +5,7 @@ using TravelingSalesmanProblem.Extensions;
 
 namespace TravelingSalesmanProblem.Algorithms;
 
-public class BranchAndBound
+public class BranchAndBound : ITspAlgorithm
 {
   private readonly Graph _graph;
 
@@ -18,10 +18,10 @@ public class BranchAndBound
   {
     var matrix = _graph.AdjacencyMatrix.DeepCopy();
 
+    // wstepna redukcja macierzy 
     var initialReductionCost = ReduceMatrix(matrix);
 
     var availableVertices = new HashSet<int>();
-
     for (var i = 0; i < _graph.Size; i++)
     {
       if (i != start)
@@ -30,8 +30,9 @@ public class BranchAndBound
       }
     }
 
-    var pathsWithWeights = new List<PathHolder>();
-
+    // kolekcja przechowujaca stany z waga, sciezka oraz zredukowana macierza
+    var states = new List<PathHolder>();
+    
     for (var i = 0; i < _graph.Size; i++)
     {
       if (!availableVertices.Contains(i)) continue;
@@ -40,23 +41,24 @@ public class BranchAndBound
       MarkAsInfinity(tempMatrix, start, i);
 
       var reduceCurrentMatrix = ReduceMatrix(tempMatrix);
-      var matrixPath = new List<int> { i };
-      var costToNextVertice = reduceCurrentMatrix + initialReductionCost + matrix[start][i];
+      var tempPath = new List<int> { i };
+      var tempWeight = reduceCurrentMatrix + initialReductionCost + matrix[start][i];
 
-      pathsWithWeights.Add(new PathHolder(matrixPath, costToNextVertice, tempMatrix));
+      states.Add(new PathHolder(tempPath, tempWeight, tempMatrix));
     }
 
-
-    while (pathsWithWeights.OrderBy(x => x.Weight).FirstOrDefault().Path.Count < _graph.Size - 1)
+    var currentBound = ShortestPath(states);
+    
+    // powtarzaj petle tak dlugo dopoki sciezka z najmniejsza waga nie jest rowna dlugosci koncowej sciezki
+    while (currentBound.Path.Count < _graph.Size - 1)
     {
-      var shortestPath = pathsWithWeights.OrderBy(x => x.Weight).FirstOrDefault();
 
+      // dobranie mozliwych kolejnych sciezek
       for (var i = 1; i < _graph.Size; i++)
       {
         availableVertices.Add(i);
       }
-
-      foreach (var i in shortestPath.Path)
+      foreach (var i in currentBound.Path)
       {
         availableVertices.Remove(i);
       }
@@ -64,37 +66,38 @@ public class BranchAndBound
       for (var i = 0; i < _graph.Size; i++)
       {
         if (!availableVertices.Contains(i)) continue;
-        var lastVertice = shortestPath.Path.LastOrDefault();
+        var lastVertice = currentBound.Path.LastOrDefault();
 
-        var tempMatrix = shortestPath.Matrix.DeepCopy();
-        var cost = tempMatrix[lastVertice][i];
+        var tempMatrix = currentBound.Matrix.DeepCopy();
+        var cost = tempMatrix[lastVertice][i] > 0 ? tempMatrix[lastVertice][i] : 0 ;
 
         MarkAsInfinity(tempMatrix, lastVertice, i);
 
         var reduceCurrentMatrix = ReduceMatrix(tempMatrix);
+        var costToNextVertice = cost + reduceCurrentMatrix + currentBound.Weight;
+        var newList = new List<int>(currentBound.Path) { i };
 
-        var costToNextVertice = cost + reduceCurrentMatrix + shortestPath.Weight;
-
-        var newList = new List<int>(shortestPath.Path) { i };
-
-        pathsWithWeights.Add(new PathHolder(newList, costToNextVertice, tempMatrix));
+        states.Add(new PathHolder(newList, costToNextVertice, tempMatrix));
       }
+      // usuwanie poprzedniej sciezki zeby uniknac zapetlania
+      states.Remove(currentBound);
 
-      pathsWithWeights.Remove(shortestPath);
+      currentBound = ShortestPath(states);
     }
 
-    var shortestWay = pathsWithWeights.OrderBy(x => x.Weight).FirstOrDefault();
-
-    var weight = shortestWay.Weight;
-
-    var path = shortestWay.Path;
+    var weight = currentBound.Weight;
+    var path = currentBound.Path;
 
     path.Insert(0, start);
     path.Add(start);
 
     return (weight, path);
   }
-    
+
+  // Zwraca najkrotsza zapisana sciezke
+  private static PathHolder ShortestPath(List<PathHolder> pathsWithWeights)
+    => pathsWithWeights.OrderBy(x => x.Weight).FirstOrDefault();
+  
   private static int ReduceMatrix(int[][] matrix)
   {
     var minimumRows = new int[matrix.Length];

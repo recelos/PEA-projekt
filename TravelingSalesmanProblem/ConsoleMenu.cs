@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using DataStructures;
 using TravelingSalesmanProblem.Algorithms;
 using TravelingSalesmanProblem.Extensions;
@@ -50,16 +52,35 @@ public class ConsoleMenu
     
     if (success && files.IsInRange(chosenFile - 1))
     {
+      Console.WriteLine("Wybierz algorytm: ");
+      Console.WriteLine("1. Brute force ");
+      Console.WriteLine("2. Branch and bound ");
+
+      var success2 = int.TryParse(Console.ReadLine(), out var algo);
+      if (!success2) return;
+
       var graph = GraphFactory.ReadFromFile(files[chosenFile - 1]);
       graph.Print();
 
-      var (weight, path) = new BranchAndBound(graph).Solve(1);
+      (int, List<int>) results;
+      
+      switch (algo)
+      {
+        case 1:
+          results = new BruteForce(graph).Solve(0);
+          break; 
+        case 2:
+          results = new BranchAndBound(graph).Solve(0);
+          break; 
+        default: 
+          return;
+      }
+      
 
-      Console.WriteLine($"\nNajkrotsza droga: {weight}\n");
-      Console.WriteLine($"Droga: {path.CombineToString()}");
+      Console.WriteLine($"\nNajkrotsza droga: {results.Item1}\n");
+      Console.WriteLine($"Droga: {results.Item2.CombineToString()}");
       Console.WriteLine("\nWcisnij dowolny klawisz by kontynuowac...");
       Console.ReadKey();
-      
     }
     else
     {
@@ -74,17 +95,29 @@ public class ConsoleMenu
 
     var success = int.TryParse(Console.ReadLine(), out var size);
     
-    if (success && size is > 0 and < 21)
+    if (success && size is > 0 and < 100)
     {
-      var graph = GraphFactory.GenerateRandom(20, size);
-      graph.Print();
-      
-      var (weight, path) = new BranchAndBound(graph).Solve(0);
+      Console.WriteLine("Wybierz algorytm: ");
+      Console.WriteLine("1. Brute force ");
+      Console.WriteLine("2. Branch and bound ");
 
-      Console.WriteLine($"\nNajkrotsza droga: {weight}\n");
-      Console.WriteLine($"Droga: {path.CombineToString()}");
-      Console.ReadKey();
+      var success2 = int.TryParse(Console.ReadLine(), out var algo);
+      if (!success2) return;
       
+      List<long> results;
+
+      switch (algo)
+      {
+        case 1:
+          results = new Benchmark().Measure(1, 100, size).ToList();
+          break;
+        case 2:
+          results = new Benchmark().Measure(2, 100, size).ToList();
+          break;
+        default:
+          return;
+      }
+      PrintAndWait($"Sredni czas obliczen: {results.Average()}ms.");
     }
     else
     {

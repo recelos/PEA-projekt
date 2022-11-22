@@ -57,18 +57,19 @@ public static class GraphFactory
     {
       adjMatrix[i][i] = -1;
     }
-
-    // wypelnianie losowymi wartosciami z podanego zakresu
-    for (var i = 1; i < size; i++)
+    
+    for (var i = 0; i < size; i++)
     {
-      for (var j = 0; j < i; j++)
+      for (var j = 0; j < size; j++)
       {
-        var value = random.Next(1, range);
-        adjMatrix[i][j] = value;
-        adjMatrix[j][i] = value;
+        if (i != j)
+        {
+          var value = random.Next(1, range);
+          adjMatrix[i][j] = value;
+        }
       }
     }
-
+    
     return adjMatrix;
   }
 }
