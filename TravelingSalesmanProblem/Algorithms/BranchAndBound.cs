@@ -31,7 +31,7 @@ public class BranchAndBound : ITspAlgorithm
     }
 
     // kolekcja przechowujaca stany z waga, sciezka oraz zredukowana macierza
-    var states = new List<PathHolder>();
+    var nodes = new List<PathHolder>();
     
     for (var i = 0; i < _graph.Size; i++)
     {
@@ -44,10 +44,10 @@ public class BranchAndBound : ITspAlgorithm
       var tempPath = new List<int> { i };
       var tempWeight = reduceCurrentMatrix + initialReductionCost + matrix[start][i];
 
-      states.Add(new PathHolder(tempPath, tempWeight, tempMatrix));
+      nodes.Add(new PathHolder(tempPath, tempWeight, tempMatrix));
     }
 
-    var currentBound = ShortestPath(states);
+    var currentBound = ShortestPath(nodes);
     
     // powtarzaj petle tak dlugo dopoki sciezka z najmniejsza waga nie jest rowna dlugosci koncowej sciezki
     while (currentBound.Path.Count < _graph.Size - 1)
@@ -63,26 +63,28 @@ public class BranchAndBound : ITspAlgorithm
         availableVertices.Remove(i);
       }
 
+      var lastVertex = currentBound.Path.LastOrDefault();
       for (var i = 0; i < _graph.Size; i++)
       {
+        //przeszukuj tylko dostepne wierzcholmi
         if (!availableVertices.Contains(i)) continue;
-        var lastVertice = currentBound.Path.LastOrDefault();
 
         var tempMatrix = currentBound.Matrix.DeepCopy();
-        var cost = tempMatrix[lastVertice][i] > 0 ? tempMatrix[lastVertice][i] : 0 ;
+        var travelCost = tempMatrix[lastVertex][i] > 0 ? tempMatrix[lastVertex][i] : 0 ;
 
-        MarkAsInfinity(tempMatrix, lastVertice, i);
+        //oznacz kolumne, wiersz oraz krawedz trasy jako -1
+        MarkAsInfinity(tempMatrix, lastVertex, i);
 
+        // zredukuj macierz
         var reduceCurrentMatrix = ReduceMatrix(tempMatrix);
-        var costToNextVertice = cost + reduceCurrentMatrix + currentBound.Weight;
-        var newList = new List<int>(currentBound.Path) { i };
+        var newWeight = travelCost + reduceCurrentMatrix + currentBound.Weight;
+        var newPath = new List<int>(currentBound.Path) { i };
 
-        states.Add(new PathHolder(newList, costToNextVertice, tempMatrix));
+        nodes.Add(new PathHolder(newPath, newWeight, tempMatrix));
       }
       // usuwanie poprzedniej sciezki zeby uniknac zapetlania
-      states.Remove(currentBound);
-
-      currentBound = ShortestPath(states);
+      nodes.Remove(currentBound);
+      currentBound = ShortestPath(nodes);
     }
 
     var weight = currentBound.Weight;
@@ -95,8 +97,8 @@ public class BranchAndBound : ITspAlgorithm
   }
 
   // Zwraca najkrotsza zapisana sciezke
-  private static PathHolder ShortestPath(List<PathHolder> pathsWithWeights)
-    => pathsWithWeights.OrderBy(x => x.Weight).FirstOrDefault();
+  private static PathHolder ShortestPath(List<PathHolder> input)
+    => input.OrderBy(x => x.Weight).FirstOrDefault();
   
   private static int ReduceMatrix(int[][] matrix)
   {
@@ -106,6 +108,7 @@ public class BranchAndBound : ITspAlgorithm
     for (var i = 0; i < matrix.Length; i++)
     {
       var temp = int.MaxValue;
+      //znajdz najmniejsza wartosc w wierszu
       for (var j = 0; j < matrix.Length; j++)
       {
         if (matrix[i][j] < temp && i != j && matrix[i][j] >= 0)
@@ -113,10 +116,10 @@ public class BranchAndBound : ITspAlgorithm
           temp = matrix[i][j];
         }
       }
-
       minimumRows[i] = temp == int.MaxValue ? 0 : temp;
     }
-
+    
+    // odejmij ja od wszystkich wartosci w wierszu
     for (var i = 0; i < matrix.Length; i++)
     {
       for (var j = 0; j < matrix.Length; j++)
@@ -128,6 +131,7 @@ public class BranchAndBound : ITspAlgorithm
       }
     }
 
+    // to samo dla kolumn
     for (var i = 0; i < matrix.Length; i++)
     {
       var temp = int.MaxValue;
@@ -153,6 +157,7 @@ public class BranchAndBound : ITspAlgorithm
       }
     }
 
+    // suma jest kosztem redukcji
     return minimumCols.Sum() + minimumRows.Sum();
   }
 
@@ -160,13 +165,14 @@ public class BranchAndBound : ITspAlgorithm
   {
     for (var i = 0; i < input.Length; i++)
     {
+      // oznaczenie wiersza z ktorego wychodzimy
       input[from][i] = -1;
+      // oznaczenie kolumny do ktorej wchodzimy
       input[i][to] = -1;
     }
-
     input[to][from] = -1;
   }
-
+  
   private struct PathHolder
   {
     public PathHolder(List<int> path, int weight, int[][] matrix)
