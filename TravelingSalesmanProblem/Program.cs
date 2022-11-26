@@ -1,4 +1,6 @@
-﻿namespace TravelingSalesmanProblem;
+﻿using System;
+
+namespace TravelingSalesmanProblem;
 
 public static class Program
 {

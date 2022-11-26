@@ -1,21 +1,29 @@
-﻿namespace TravelingSalesmanProblem.Extensions;
+﻿using System.Collections.Generic;
+using System.Linq;
 
-public static class CollectionExtensions
+namespace TravelingSalesmanProblem.Extensions
 {
-  public static bool IsInRange<T>(this ICollection<T> collection, int input)
-    => input >= 0 && input < collection.Count;
-
-  public static string CombineToString<T>(this IEnumerable<T> collection)
-    => string.Join(", ", collection);
-
-  public static void Swap<T>(this IList<T> list, int left, int right)
-    => (list[left], list[right]) = (list[right], list[left]);
-
-  public static void ReverseSubList<T>(this IList<T> list, int left, int right)
+  public static class CollectionExtensions
   {
-    while (left < right)
+    public static bool IsInRange<T>(this ICollection<T> collection, int input)
+      => input >= 0 && input < collection.Count;
+
+    public static string CombineToString<T>(this IEnumerable<T> collection)
+      => string.Join(", ", collection);
+
+    public static void Swap<T>(this IList<T> list, int left, int right)
+      => (list[left], list[right]) = (list[right], list[left]);
+
+    public static int[][] DeepCopy(this int[][] input)
+      => input.Select(m => m.ToArray()).ToArray();
+  
+    public static void ReverseSubList<T>(this IList<T> list, int left, int right)
     {
-      list.Swap(left++, right--);
+      while (left < right)
+      {
+        list.Swap(left++, right--);
+      }
     }
-  }
+  }  
 }
+
