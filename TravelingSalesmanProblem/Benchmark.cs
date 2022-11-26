@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using DataStructures;
 using TravelingSalesmanProblem.Algorithms;
+using TravelingSalesmanProblem.DataStructures;
 
 namespace TravelingSalesmanProblem;
 
@@ -11,10 +11,7 @@ public class Benchmark
 {
   public IEnumerable<long> Measure(int input, int iterations, int size)
   {
-    
     Warmup(size, input);
-    
-    
     var output = new List<long>();
 
     for (var i = 0; i < iterations; i++)
@@ -29,7 +26,7 @@ public class Benchmark
         case 2:
           algorithm = new BranchAndBound(graph);
           break;
-          default:
+        default:
             return new List<long>();
       }
       

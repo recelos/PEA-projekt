@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using DataStructures;
+using TravelingSalesmanProblem.DataStructures;
 using TravelingSalesmanProblem.Extensions;
 
 namespace TravelingSalesmanProblem.Algorithms;
@@ -52,6 +52,9 @@ public class BruteForce : ITspAlgorithm
       // ustawienie nowej permutacji (jesli istnieje)
       hasNextPermutation = FindNextPermutation(permutation);
     }
+    
+    outputPath.Insert(0, start);
+    
     return (outputWeight, outputPath ?? new List<int>());
   }
     

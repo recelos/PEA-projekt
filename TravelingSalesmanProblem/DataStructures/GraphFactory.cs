@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace DataStructures;
+namespace TravelingSalesmanProblem.DataStructures;
 
 public static class GraphFactory
 {

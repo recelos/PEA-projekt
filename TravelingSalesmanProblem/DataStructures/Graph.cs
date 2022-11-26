@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DataStructures;
+namespace TravelingSalesmanProblem.DataStructures;
 
 public class Graph
 {

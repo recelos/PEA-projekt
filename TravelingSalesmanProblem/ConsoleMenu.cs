@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using DataStructures;
 using TravelingSalesmanProblem.Algorithms;
+using TravelingSalesmanProblem.DataStructures;
 using TravelingSalesmanProblem.Extensions;
 
 namespace TravelingSalesmanProblem;
@@ -75,7 +75,6 @@ public class ConsoleMenu
         default: 
           return;
       }
-      
 
       Console.WriteLine($"\nNajkrotsza droga: {results.Item1}\n");
       Console.WriteLine($"Droga: {results.Item2.CombineToString()}");

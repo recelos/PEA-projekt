@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using DataStructures;
+using TravelingSalesmanProblem.DataStructures;
 using TravelingSalesmanProblem.Extensions;
 
 namespace TravelingSalesmanProblem.Algorithms;
@@ -38,7 +38,7 @@ public class BranchAndBound : ITspAlgorithm
       if (!availableVertices.Contains(i)) continue;
 
       var tempMatrix = matrix.DeepCopy();
-      MarkAsInfinity(tempMatrix, start, i);
+      MarkAsInfinity(tempMatrix, start, i, start);
 
       var reduceCurrentMatrix = ReduceMatrix(tempMatrix);
       var tempPath = new List<int> { i };
@@ -52,15 +52,15 @@ public class BranchAndBound : ITspAlgorithm
     // powtarzaj petle tak dlugo dopoki sciezka z najmniejsza waga nie jest rowna dlugosci koncowej sciezki
     while (currentBound.Path.Count < _graph.Size - 1)
     {
-
       // dobranie mozliwych kolejnych sciezek
-      for (var i = 1; i < _graph.Size; i++)
+      for (var i = 0; i < _graph.Size; i++)
       {
         availableVertices.Add(i);
       }
       foreach (var i in currentBound.Path)
       {
         availableVertices.Remove(i);
+        availableVertices.Remove(start);
       }
 
       var lastVertex = currentBound.Path.LastOrDefault();
@@ -73,7 +73,7 @@ public class BranchAndBound : ITspAlgorithm
         var travelCost = tempMatrix[lastVertex][i] > 0 ? tempMatrix[lastVertex][i] : 0 ;
 
         //oznacz kolumne, wiersz oraz krawedz trasy jako -1
-        MarkAsInfinity(tempMatrix, lastVertex, i);
+        MarkAsInfinity(tempMatrix, lastVertex, i, start);
 
         // zredukuj macierz
         var reduceCurrentMatrix = ReduceMatrix(tempMatrix);
@@ -161,7 +161,7 @@ public class BranchAndBound : ITspAlgorithm
     return minimumCols.Sum() + minimumRows.Sum();
   }
 
-  private static void MarkAsInfinity(int[][] input, int from, int to)
+  private static void MarkAsInfinity(int[][] input, int from, int to, int start)
   {
     for (var i = 0; i < input.Length; i++)
     {
@@ -170,7 +170,7 @@ public class BranchAndBound : ITspAlgorithm
       // oznaczenie kolumny do ktorej wchodzimy
       input[i][to] = -1;
     }
-    input[to][from] = -1;
+    input[to][start] = -1;
   }
   
   private struct PathHolder
