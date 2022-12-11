@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using TravelingSalesmanProblem.DataStructures;
@@ -36,8 +37,6 @@ public abstract class TabuSearch : ITspAlgorithm
     var outputPath = new List<int>();
     var diversificationCounter = 0;
 
-        
-    
     var timer = new Stopwatch();
     timer.Start();
     while (timer.ElapsedMilliseconds <= _maxTime)
@@ -46,23 +45,7 @@ public abstract class TabuSearch : ITspAlgorithm
       
       var previousWeight = currentWeight;
 
-      for (var i = 0; i < _graph.Size - 1; i++)
-      {
-        for (var j = i + 1; j < _graph.Size - 1; j++)
-        {
-          var neighbourPath = new List<int>(currentPath);
-          GetNeighbour(neighbourPath, i, j);
-
-          var neighbourWeight = GetCurrentCost(neighbourPath, start);
-
-          if (neighbourWeight < outputWeight || (neighbourWeight < currentWeight && tabuMatrix[i, j] == 0))
-          {
-            currentWeight = neighbourWeight;
-            bestI = i;
-            bestJ = j;
-          }
-        }
-      } 
+      currentWeight = FindBestNeighbour(start, currentPath, outputWeight, currentWeight, tabuMatrix, ref bestI, ref bestJ); 
       
       GetNeighbour(currentPath, bestI, bestJ);
       tabuMatrix[bestI, bestJ] = _graph.Size;
@@ -78,15 +61,15 @@ public abstract class TabuSearch : ITspAlgorithm
 
       if (currentWeight < outputWeight)
       {
-        tabuMatrix[bestI, bestJ] = _graph.Size;
         outputPath = new List<int>(currentPath);
         outputWeight = currentWeight;
+        Console.WriteLine(outputWeight);
       }
       // jezeli znaleziono minimum lokalne, nalezy zaczac szukac gdzie indziej
-      else if(previousWeight == currentWeight && _diversification)
+      else if (previousWeight <= currentWeight)
       {
         diversificationCounter++;
-        if (diversificationCounter > 50)
+        if (diversificationCounter > 20)
         {
           diversificationCounter = 0;
           currentPath = currentPath.Shuffle();
@@ -100,6 +83,30 @@ public abstract class TabuSearch : ITspAlgorithm
     outputPath.Insert(0, start);
     outputPath.Add(0);
     return (outputWeight, outputPath);
+  }
+
+  private int FindBestNeighbour(int start, List<int> currentPath, int outputWeight, int currentWeight, int[,] tabuMatrix,
+    ref int bestI, ref int bestJ)
+  {
+    for (var i = 0; i < _graph.Size - 1; i++)
+    {
+      for (var j = i + 1; j < _graph.Size - 1; j++)
+      {
+        var neighbourPath = new List<int>(currentPath);
+        GetNeighbour(neighbourPath, i, j);
+
+        var neighbourWeight = GetCurrentCost(neighbourPath, start);
+
+        if (neighbourWeight < outputWeight || (neighbourWeight < currentWeight && tabuMatrix[i, j] == 0))
+        {
+          currentWeight = neighbourWeight;
+          bestI = i;
+          bestJ = j;
+        }
+      }
+    }
+
+    return currentWeight;
   }
 
   protected abstract void GetNeighbour(IList<int> input, int i, int j);
@@ -117,31 +124,5 @@ public abstract class TabuSearch : ITspAlgorithm
 
     weight += _graph.AdjacencyMatrix[currentVertex][start];
     return weight;
-  }
-
-  private List<int> GreedyFirstPath(List<int> input, int start)
-  {
-    var output = new List<int>();
-    var current = start;
-
-    while (input.Any())
-    {
-      var shortest = int.MaxValue;
-      var nextVertex = 0;
-      foreach (var vertex in input)
-      {
-        if (_graph.AdjacencyMatrix[current][vertex] < shortest)
-        {
-          shortest = _graph.AdjacencyMatrix[current][vertex];
-          nextVertex = vertex;
-        }
-      }
-
-      input.Remove(nextVertex);
-      output.Add(nextVertex);
-      current = nextVertex;
-    }
-
-    return output;
   }
 }
