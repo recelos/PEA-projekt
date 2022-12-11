@@ -33,20 +33,20 @@ public abstract class TabuSearch : ITspAlgorithm
     
     var currentWeight = GetCurrentCost(currentPath, start);
     var outputWeight = currentWeight;
-
     var outputPath = new List<int>();
-
     var diversificationCounter = 0;
 
+        
+    
     var timer = new Stopwatch();
     timer.Start();
     while (timer.ElapsedMilliseconds <= _maxTime)
     {
+      int bestI = 0, bestJ = 0;
+      
       var previousWeight = currentWeight;
 
-      var bestCurrentPath = currentPath;
-      
-      for (var i = 1; i < _graph.Size - 1; i++)
+      for (var i = 0; i < _graph.Size - 1; i++)
       {
         for (var j = i + 1; j < _graph.Size - 1; j++)
         {
@@ -58,13 +58,14 @@ public abstract class TabuSearch : ITspAlgorithm
           if (neighbourWeight < outputWeight || (neighbourWeight < currentWeight && tabuMatrix[i, j] == 0))
           {
             currentWeight = neighbourWeight;
-            tabuMatrix[i, j] = _graph.Size;
-            bestCurrentPath = currentPath;
+            bestI = i;
+            bestJ = j;
           }
         }
-      }
-
-      currentPath = bestCurrentPath;
+      } 
+      
+      GetNeighbour(currentPath, bestI, bestJ);
+      tabuMatrix[bestI, bestJ] = _graph.Size;
       
       for (var i = 0; i < _graph.Size; i++)
       {
@@ -77,6 +78,7 @@ public abstract class TabuSearch : ITspAlgorithm
 
       if (currentWeight < outputWeight)
       {
+        tabuMatrix[bestI, bestJ] = _graph.Size;
         outputPath = new List<int>(currentPath);
         outputWeight = currentWeight;
       }
