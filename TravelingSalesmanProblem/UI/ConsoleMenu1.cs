@@ -6,9 +6,9 @@ using TravelingSalesmanProblem.Algorithms;
 using TravelingSalesmanProblem.DataStructures;
 using TravelingSalesmanProblem.Extensions;
 
-namespace TravelingSalesmanProblem;
+namespace TravelingSalesmanProblem.UI;
 
-public class ConsoleMenu
+public class ConsoleMenu1
 {
   private const string GraphDirectory = "graphs";
   

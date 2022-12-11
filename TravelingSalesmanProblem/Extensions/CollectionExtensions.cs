@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TravelingSalesmanProblem.Extensions
@@ -23,6 +24,12 @@ namespace TravelingSalesmanProblem.Extensions
       {
         list.Swap(left++, right--);
       }
+    }
+    
+    public static List<int> Shuffle(this IList<int> list)
+    {
+      var rand = new Random();
+      return new List<int>(list.OrderBy(item => rand.Next()));
     }
   }  
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using TravelingSalesmanProblem.UI;
 
 namespace TravelingSalesmanProblem;
 
@@ -8,7 +9,7 @@ public static class Program
   {
     while (true)
     {
-      new ConsoleMenu().Show();
+      new ConsoleMenu2().Show();
       Console.Clear();
     }
   }

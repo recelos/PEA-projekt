@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace TravelingSalesmanProblem.DataStructures;
 
@@ -38,7 +40,50 @@ public static class GraphFactory
 
     return new Graph(matrix);
   }
+
+  public static Graph ReadAtspFile(string filename)
+  {
+    var fileContent = File.ReadAllLines(filename).ToList();
   
+    var size = int.Parse(fileContent[0]);
+
+    var matrix = new int[size][];
+
+    for (var i = 0; i < size; i++)
+    {
+      matrix[i] = new int[size];
+    }
+    
+    
+    fileContent.RemoveAt(0);
+    
+    var line = string
+      .Join("", fileContent).Trim(null)
+      .Split(Array.Empty<char>(), StringSplitOptions.RemoveEmptyEntries);
+
+
+    var counter = 0;
+    var lineCounter = 0;
+    foreach (var text in line)
+    {
+      if (counter == size)
+      {
+        counter = 0;
+        lineCounter++;
+      }
+
+      if (!int.TryParse(text, out var value))
+      {
+        break;
+      }
+      
+      matrix[counter][lineCounter] = counter != lineCounter ? value : -1;
+
+      counter++;
+    }
+    
+    return new Graph(matrix);
+  }
   
   private static int[][] GetRandomMatrix(int range, int size)
   {
