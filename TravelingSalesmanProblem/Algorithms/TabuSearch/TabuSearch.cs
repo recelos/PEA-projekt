@@ -51,14 +51,9 @@ public abstract class TabuSearch : ITspAlgorithm
       tabuMatrix[bestI, bestJ] = _graph.Size;
       
       for (var i = 0; i < _graph.Size; i++)
-      {
         for (var j = i + 1; j < _graph.Size; j++)
-        {
-          if (tabuMatrix[i, j] > 0)
-            tabuMatrix[i, j] -= 1;
-        }
-      }
-
+          if (tabuMatrix[i, j] > 0) tabuMatrix[i, j] -= 1;
+      
       if (currentWeight < outputWeight)
       {
         outputPath = new List<int>(currentPath);
@@ -69,10 +64,12 @@ public abstract class TabuSearch : ITspAlgorithm
       else if (previousWeight <= currentWeight)
       {
         diversificationCounter++;
-        if (diversificationCounter > 20)
+        if (diversificationCounter > _graph.Size * 100)
         {
           diversificationCounter = 0;
           currentPath = currentPath.Shuffle();
+          Console.WriteLine("SHUFFLED");
+          Console.WriteLine(currentPath.CombineToString());
           tabuMatrix = new int[_graph.Size,_graph.Size];
         }
       }
