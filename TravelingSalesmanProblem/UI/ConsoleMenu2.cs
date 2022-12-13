@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using TravelingSalesmanProblem.Algorithms;
 using TravelingSalesmanProblem.Algorithms.TabuSearch;
 using TravelingSalesmanProblem.DataStructures;
 using TravelingSalesmanProblem.Extensions;
@@ -16,7 +15,7 @@ public class ConsoleMenu2
   {
     Console.WriteLine("Wybierz rodzaj operacji:");
     Console.WriteLine("1. Wczytaj graf z pliku");
-    Console.WriteLine("3. Zakoncz program");
+    Console.WriteLine("2. Zakoncz program");
 
     var x = int.Parse(Console.ReadLine() ?? string.Empty);
     
@@ -25,7 +24,7 @@ public class ConsoleMenu2
       case 1:
         ReadFromFile();
         break;
-      case 3:
+      case 2:
         Environment.Exit(0);
         break;
       default:
@@ -51,7 +50,7 @@ public class ConsoleMenu2
       Console.WriteLine("Wybierz definicje sasiedztwa: ");
       Console.WriteLine("1. Swap");
       Console.WriteLine("2. Insert");
-      Console.WriteLine("3. Reverse");
+      Console.WriteLine("3. Inverse");
 
       
       var success2 = int.TryParse(Console.ReadLine(), out var algorithm);
@@ -71,13 +70,13 @@ public class ConsoleMenu2
       switch (algorithm)
       {
         case 1:
-          results = new TabuSearchSwap(graph, time, true).Solve(0);
+          results = new TabuSearchSwap(graph, time).Solve(0);
           break; 
         case 2:
-          results = new TabuSearchInsert(graph, time, true).Solve(0);
+          results = new TabuSearchInsert(graph, time).Solve(0);
           break; 
         case 3:
-          results = new TabuSearchReverse(graph, time, true).Solve(0);
+          results = new TabuSearchInvert(graph, time).Solve(0);
           break;
         default: 
           return;
