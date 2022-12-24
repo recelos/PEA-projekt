@@ -39,7 +39,7 @@ public abstract class TabuSearch : ITspAlgorithm
       var move = (0, 0);
       
       var previousWeight = currentWeight;
-      currentWeight = FindBestMove(start, currentPath, currentWeight, tabuList, ref move); 
+      FindBestMove(start, currentPath, ref currentWeight, tabuList, ref move); 
       
       GetNeighbour(currentPath, move.Item1, move.Item2);
 
@@ -76,8 +76,8 @@ public abstract class TabuSearch : ITspAlgorithm
     return (outputWeight, outputPath);
   }
 
-  private int FindBestMove(int start, List<int> currentPath, 
-    int currentWeight, Queue<(int, int)> tabuList, ref (int, int) move)
+  private void FindBestMove(int start, List<int> currentPath, 
+    ref int currentWeight, Queue<(int, int)> tabuList, ref (int, int) move)
   {
     for (var i = 0; i < _graph.Size - 1; i++)
     {
@@ -94,7 +94,6 @@ public abstract class TabuSearch : ITspAlgorithm
         }
       }
     }
-    return currentWeight;
   }
 
   protected abstract void GetNeighbour(IList<int> input, int i, int j);

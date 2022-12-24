@@ -26,14 +26,14 @@ namespace TravelingSalesmanProblem.Extensions
       }
     }
     
-    public static void Shuffle(this List<int> array)
+    public static void Shuffle(this List<int> list)
     {
       var rand = new Random();
-      var n = array.Count;
+      var n = list.Count;
       while (n > 1) 
       {
         var k = rand.Next(n--);
-        (array[n], array[k]) = (array[k], array[n]);
+        (list[n], list[k]) = (list[k], list[n]);
       }
     }
   }  

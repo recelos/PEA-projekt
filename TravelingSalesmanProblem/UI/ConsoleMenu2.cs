@@ -76,7 +76,7 @@ public class ConsoleMenu2
           results = new TabuSearchInsert(graph, time).Solve(0);
           break; 
         case 3:
-          results = new TabuSearchInvert(graph, time).Solve(0);
+          results = new TabuSearchInverse(graph, time).Solve(0);
           break;
         default: 
           return;
