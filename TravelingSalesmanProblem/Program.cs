@@ -9,7 +9,7 @@ public static class Program
   {
     while (true)
     {
-      new ConsoleMenu2().Show();
+      new ConsoleMenu3().Show();
       Console.Clear();
     }
   }
