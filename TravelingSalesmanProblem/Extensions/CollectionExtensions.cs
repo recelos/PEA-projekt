@@ -26,9 +26,8 @@ namespace TravelingSalesmanProblem.Extensions
       }
     }
     
-    public static void Shuffle(this List<int> list)
+    public static void Shuffle(this List<int> list, Random rand)
     {
-      var rand = new Random();
       var n = list.Count;
       while (n > 1) 
       {

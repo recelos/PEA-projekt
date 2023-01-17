@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using TravelingSalesmanProblem.DataStructures;
 using TravelingSalesmanProblem.Extensions;
 
@@ -24,7 +23,7 @@ public abstract class TabuSearch : ITspAlgorithm
     var currentPath = Enumerable.Range(0, _graph.Size)
       .Except(new[] {start})
       .ToList();
-    currentPath.Shuffle();
+    currentPath.Shuffle(new Random());
     
     var currentWeight = GetCurrentWeight(currentPath, start);
     var outputWeight = currentWeight;
@@ -64,7 +63,7 @@ public abstract class TabuSearch : ITspAlgorithm
         {
           currentWeight = int.MaxValue;
           diversificationCounter = 0;
-          currentPath.Shuffle();
+          currentPath.Shuffle(new Random());
           tabuList.Clear();
         }
       }

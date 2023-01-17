@@ -16,6 +16,8 @@ public class Genetic : ITspAlgorithm
   private const double CrossRate = 0.8;
   private const double MutationRate = 0.3;
   private readonly long _time;
+  private const int TournamentSize = 4;
+  
   
   public Genetic(Graph graph,
     long time,
@@ -29,83 +31,56 @@ public class Genetic : ITspAlgorithm
 
   public (int, List<int>) Solve(int start)
   {
-    var tournamentSize = 4;
-
-    var bestPath = new List<int>();
-
-    var bestSolution = int.MaxValue;
+    var population = new List<PathHolder>();
+    var nextPopulation = new List<PathHolder>();
     
-    var population = CreateFilledDoubleTab(PopulationSize, _graph.Size - 1);
-    var nextPopulation = CreateFilledDoubleTab(PopulationSize, _graph.Size - 1);
-    var permutation = CreateFilledTab(_graph.Size - 1);
-
     for (var i = 0; i < PopulationSize; i++)
     {
-      population[i] = GenerateRandomPath();
+      var path = GenerateRandomPath(start);
+      var weight = GetWeight(path, start);
+      population.Add(new PathHolder(weight, path));
     }
 
-    var ratedPopulation = CreateFilledTab(PopulationSize);
-    for (var i = 0; i < population.Length; i++)
-    {
-      ratedPopulation[i] = CalculatePathCost(population[i]);
-    }
-
-    if (ratedPopulation[FindIndexOfMinElementFromTab(ratedPopulation)] < bestSolution)
-    {
-      bestSolution = ratedPopulation[FindIndexOfMinElementFromTab(ratedPopulation)];
-      bestPath = new List<int>(population[FindIndexOfMinElementFromTab(ratedPopulation)]);
-    }
+    var bestWeight = ShortestPath(population).Weight;
+    var bestPath = new List<int>(ShortestPath(population).Path);
     
     var timer = new Stopwatch();
     timer.Start();
     
     while (true)
     {
-      //resetowanie tablicy
-      ratedPopulation = CreateFilledTab(PopulationSize);
-      
-      // wpisanie do tablicy i ocena ścieżek
-      for (var i = 0; i < population.Length; i++)
+      foreach (var path in population)
       {
-        ratedPopulation[i] = CalculatePathCost(population[i]);
+        path.Weight = GetWeight(path.Path, start);
       }
-
       // Tworzenie nowej populacji na drodze selekcji
       for (var j = 0; j < PopulationSize; j++)
       {
         var localResult = int.MaxValue;
-
+        var toAdd = new PathHolder();
+        
         // Organizacja turnieju
-        for (var k = 0; k < tournamentSize; k++)
+        for (var k = 0; k < TournamentSize; k++)
         {
           var index = _rand.Next(PopulationSize);
-          if (ratedPopulation[index] < localResult)
+          if (population[index].Weight < localResult)
           {
-            localResult = ratedPopulation[index];
-            permutation = (int[])population[index].Clone();
+            localResult = population[index].Weight;
+            toAdd =  new PathHolder(population[index].Weight, population[index].Path);
           }
         }
-
-        nextPopulation[SelectLastUnfilled(nextPopulation)] = (int[]) permutation.Clone();
+        nextPopulation.Add(toAdd);
       }
 
-      // Podmiana pokoleń
       population = nextPopulation;
-      nextPopulation = CreateFilledDoubleTab(PopulationSize, _graph.Size - 1);
+      nextPopulation = new List<PathHolder>();
 
-
-
-      // Rozpatrywanie krzyżowania
       for (var j = 0; j < (int)(CrossRate * (float)PopulationSize); j += 2)
       {
-        population[j] = MyOrderCrossover(population[j], population[j + 1]);
-        population[j + 1] = MyOrderCrossover(population[j + 1], population[j]);
+        population[j].Path = OrderCrossover(population[j].Path, population[j+1].Path);
+        population[j + 1].Path = OrderCrossover(population[j + 1].Path, population[j].Path);
       }
 
-      // population = nextPopulation;
-      // nextPopulation = CreateFilledDoubleTab(PopulationSize, _graph.Size - 1);
-      
-      //Rozpatrywanie mutacji
       for (var j = 0; j < (int)(MutationRate * (float)PopulationSize) + 1; j++)
       {
         int p1, p2, p3;
@@ -116,149 +91,113 @@ public class Genetic : ITspAlgorithm
           p3 = _rand.Next(PopulationSize);
         } while (p1 == p2);
 
-        (population[p3][p1], population[p3][p2]) = (population[p3][p2], population[p3][p1]);
+        (population[p3].Path[p1], population[p3].Path[p2]) = (population[p3].Path[p2], population[p3].Path[p1]);
       }
 
-      for (var i = 0; i < population.Length; i++)
+      foreach (var element in population)
       {
-        //liczenie na nowo wartości
-        ratedPopulation[i] = CalculatePathCost(population[i]);
+        element.Weight = GetWeight(element.Path, start);
       }
-
-      if (ratedPopulation[FindIndexOfMinElementFromTab(ratedPopulation)] < bestSolution)
+      
+      if (ShortestPath(population).Weight < bestWeight)
       {
-        bestSolution = ratedPopulation[FindIndexOfMinElementFromTab(ratedPopulation)];
-        bestPath = new List<int>(population[FindIndexOfMinElementFromTab(ratedPopulation)]);
+        bestWeight = ShortestPath(population).Weight;
+        bestPath = new List<int>(ShortestPath(population).Path);
       }
-
+      
       if (timer.ElapsedMilliseconds > _time)
       {
-        return (bestSolution, bestPath);
+        return (bestWeight, bestPath);
       }
     }
   }
-  
-  private int CalculatePathCost(int[] path)
-  {
-    var cost = 0;
-    for (var i = 0; i < path.Length - 1; i++)
-    {
-      cost += _graph.AdjacencyMatrix[path[i]][path[i + 1]];
-    }
-
-    cost += _graph.AdjacencyMatrix[0][path[0]];
-    cost += _graph.AdjacencyMatrix[path[path.Length - 1]][0];
-    return cost;
-  }
-
-  private int[] GenerateRandomPath()
-  {
-    //generowanie losowej ścieżki
-    int[] randomPath = new int[_graph.AdjacencyMatrix.Length - 1];
-    for (int i = 0; i < _graph.AdjacencyMatrix.Length - 1; i++)
-    {
-      randomPath[i] = i + 1;
-    }
-
-    for (int i = 0; i < randomPath.Length; i++)
-    {
-      //funkcja losująca kolejność
-      var randomIndexToSwap = _rand.Next(1, randomPath.Length); //wszystkie oprocz 0
-      (randomPath[randomIndexToSwap], randomPath[i]) = (randomPath[i], randomPath[randomIndexToSwap]);
-    }
-
-    return randomPath;
-  }
-
-  private static int SelectLastUnfilled(int[][] tab)
-  {
-    for (var i = 0; i < tab.Length; i++)
-    {
-      if (tab[i][1] == -1)
-      {
-        return i;
-      }
-    }
-    return -2;
-  }
-
-  private int[] CreateFilledTab(int tabSize)
-  {
-    var tab = new int[tabSize];
-    tab.Fill(-1);
-    return tab;
-  }
-
-  private int[][] CreateFilledDoubleTab(int populationSize, int graphSize)
-  {
-    var tab = new int[populationSize][];
-    for (var i = 0; i < populationSize; i++)
-    {
-      tab[i] = CreateFilledTab(graphSize);
-    }
-
-    return tab;
-  }
-  
-  private int FindIndexOfMinElementFromTab(int[] tab)
-    => Array.IndexOf(tab, tab.Min());
-
-  private int[] MyOrderCrossover(int[] tab1, int[] tab2)
+  private List<int> OrderCrossover(IReadOnlyList<int> tab1, IReadOnlyList<int> tab2)
   {
     var startIndex = _rand.Next(_graph.Size - 2);
-    var endIndex = _rand.Next(_graph.Size - 1);
-    if (startIndex > endIndex)
-    {
-      (endIndex, startIndex) = (startIndex, endIndex);
-    }
-
+    var endIndex = _rand.Next(startIndex, _graph.Size - 1);
+    
     var child = new int[_graph.Size - 1];
     child.Fill(-1);
-
+    
     for (var i = startIndex; i < endIndex + 1; i++)
     {
       child[i] = tab1[i];
     }
-
+    
     var actualChildIndex = endIndex + 1;
-    if (actualChildIndex > tab1.Length - 1)
+    if (actualChildIndex > tab1.Count - 1)
     {
       actualChildIndex = 0;
     }
-
-    for (var i = endIndex + 1; i < tab2.Length; i++)
+    
+    for (var i = endIndex + 1; i < tab2.Count; i++)
     {
       if (child.All(element => element != tab2[i]))
       {
         child[actualChildIndex] = tab2[i];
         actualChildIndex++;
       }
-
-      if (actualChildIndex > tab1.Length - 1)
+    
+      if (actualChildIndex > tab1.Count - 1)
       {
         actualChildIndex = 0;
       }
     }
-
+    
     for (var i = 0; child.Any(element => element == -1); i++)
     {
       if (child.All(element => element != tab2[i]))
       {
         child[actualChildIndex] = tab2[i];
         actualChildIndex++;
-        if (actualChildIndex > tab1.Length - 1)
+        if (actualChildIndex > tab1.Count - 1)
         {
           actualChildIndex = 0;
         }
       }
     }
-    return child;
+    return child.ToList();
   }
 
-  private struct PathHolder
+  private List<int> GenerateRandomPath(int start)
   {
-    public int Weight { get; }
-    public List<int> Path { get; }
+    var path = Enumerable.Range(0, _graph.Size)
+      .Except(new[] {start})
+      .ToList();
+    path.Shuffle(_rand);
+    return path;
+  }
+  
+  private int GetWeight(IReadOnlyList<int> path, int start)
+  {
+    var weight = 0;
+    var currentVertex = start;
+
+    for (var i = 0; i < path.Count; i++)
+    {
+      var vertex = path[i];
+      weight += _graph.AdjacencyMatrix[currentVertex][vertex];
+      currentVertex = vertex;
+    }
+
+    weight += _graph.AdjacencyMatrix[currentVertex][start];
+    return weight;
+  }
+
+  private static PathHolder ShortestPath(IReadOnlyList<PathHolder> input)
+  {
+    var list = new List<PathHolder>(input);
+    var output = list.OrderBy(x => x.Weight).First();
+    return new PathHolder(output.Weight, new List<int>(output.Path));
+  }
+  private class PathHolder
+  {
+    public PathHolder()
+    {
+      
+    }
+    public int Weight { get; set; }
+    public List<int> Path { get; set; }
     public PathHolder(int weight, List<int> path)
     {
       Weight = weight;
