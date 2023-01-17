@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using TravelingSalesmanProblem.Algorithms;
+using TravelingSalesmanProblem.Algorithms.Genetic;
 using TravelingSalesmanProblem.DataStructures;
 using TravelingSalesmanProblem.Extensions;
 
@@ -44,18 +45,9 @@ public class ConsoleMenu3
     }
     var success = int.TryParse(Console.ReadLine(), out var chosenFile); 
 
-    // Console.Write("Podaj czas dzialania algorytmu: ");
-    //
-    // var time = double.Parse(Console.ReadLine());
-    //
-    // Console.Write("Podaj wspolczynnik krosowania: ");
-    //
-    // var crossRate = double.Parse(Console.ReadLine());
-    //
-    // Console.Write("Podaj wspolczynnik mutacji: ");
-    //
-    // var mutationRate = double.Parse(Console.ReadLine());
+    Console.Write("Podaj czas dzialania algorytmu: ");
     
+    var time = int.Parse(Console.ReadLine());
     
     if (success && files.IsInRange(chosenFile - 1))
     {
@@ -66,7 +58,7 @@ public class ConsoleMenu3
       (int, List<int>) results;
 
 
-      results = new Genetic(graph, 30, 1, 1).Solve(0);
+      results = new GeneticSwapMutation(graph, time, 0.8d, 0.01d, 30).Solve(0);
       
       Console.WriteLine($"\nNajkrotsza droga: {results.Item1}\n");
       Console.WriteLine($"Droga: {results.Item2.CombineToString()}");

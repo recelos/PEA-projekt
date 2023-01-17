@@ -5,27 +5,32 @@ using System.Linq;
 using TravelingSalesmanProblem.DataStructures;
 using TravelingSalesmanProblem.Extensions;
 
-namespace TravelingSalesmanProblem.Algorithms;
+namespace TravelingSalesmanProblem.Algorithms.Genetic;
 
-public class Genetic : ITspAlgorithm
+public abstract class Genetic : ITspAlgorithm
 {
   private readonly Random _rand;
   private readonly Graph _graph;
 
-  private const int PopulationSize = 30;
-  private const double CrossRate = 0.8;
-  private const double MutationRate = 0.3;
+  private readonly int _populationSize;
+  private readonly double _crossRate;
+  private readonly double _mutationRate;
   private readonly long _time;
   private const int TournamentSize = 4;
   
   
-  public Genetic(Graph graph,
+  public Genetic(
+    Graph graph,
     long time,
     double crossRate,
-    double mutationRate)
+    double mutationRate, 
+    int populationSize)
   {
     _rand = new Random();
     _graph = graph;
+    _populationSize = populationSize;
+    _crossRate = crossRate;
+    _mutationRate = mutationRate;
     _time = time * 1000;
   }
 
@@ -34,7 +39,7 @@ public class Genetic : ITspAlgorithm
     var population = new List<PathHolder>();
     var nextPopulation = new List<PathHolder>();
     
-    for (var i = 0; i < PopulationSize; i++)
+    for (var i = 0; i < _populationSize; i++)
     {
       var path = GenerateRandomPath(start);
       var weight = GetWeight(path, start);
@@ -53,16 +58,14 @@ public class Genetic : ITspAlgorithm
       {
         path.Weight = GetWeight(path.Path, start);
       }
-      // Tworzenie nowej populacji na drodze selekcji
-      for (var j = 0; j < PopulationSize; j++)
+      for (var j = 0; j < _populationSize; j++)
       {
         var localResult = int.MaxValue;
         var toAdd = new PathHolder();
         
-        // Organizacja turnieju
         for (var k = 0; k < TournamentSize; k++)
         {
-          var index = _rand.Next(PopulationSize);
+          var index = _rand.Next(_populationSize);
           if (population[index].Weight < localResult)
           {
             localResult = population[index].Weight;
@@ -75,23 +78,16 @@ public class Genetic : ITspAlgorithm
       population = nextPopulation;
       nextPopulation = new List<PathHolder>();
 
-      for (var j = 0; j < (int)(CrossRate * (float)PopulationSize); j += 2)
+      for (var j = 0; j < (int)(_crossRate * (float)_populationSize); j += 2)
       {
         population[j].Path = OrderCrossover(population[j].Path, population[j+1].Path);
         population[j + 1].Path = OrderCrossover(population[j + 1].Path, population[j].Path);
       }
 
-      for (var j = 0; j < (int)(MutationRate * (float)PopulationSize) + 1; j++)
+      for (var j = 0; j < (int)(_mutationRate * (float)_populationSize) + 1; j++)
       {
-        int p1, p2, p3;
-        do
-        {
-          p1 = _rand.Next(_graph.Size - 1);
-          p2 = _rand.Next(_graph.Size - 1);
-          p3 = _rand.Next(PopulationSize);
-        } while (p1 == p2);
-
-        (population[p3].Path[p1], population[p3].Path[p2]) = (population[p3].Path[p2], population[p3].Path[p1]);
+        var pathToMutateIndex = _rand.Next(_populationSize);
+        Mutate(population[pathToMutateIndex].Path, _rand);
       }
 
       foreach (var element in population)
@@ -159,6 +155,8 @@ public class Genetic : ITspAlgorithm
     return child.ToList();
   }
 
+  protected abstract void Mutate(List<int> path, Random rand);
+  
   private List<int> GenerateRandomPath(int start)
   {
     var path = Enumerable.Range(0, _graph.Size)
@@ -192,10 +190,7 @@ public class Genetic : ITspAlgorithm
   }
   private class PathHolder
   {
-    public PathHolder()
-    {
-      
-    }
+    public PathHolder() { }
     public int Weight { get; set; }
     public List<int> Path { get; set; }
     public PathHolder(int weight, List<int> path)
