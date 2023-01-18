@@ -58,6 +58,14 @@ public class ConsoleMenu3
     Console.Write("Podaj rozmiar populacji: ");
 
     var pop = int.Parse(Console.ReadLine());
+
+    Console.Write("Podaj wspolczynnik mutacji: ");
+
+    var mutRate = double.Parse(Console.ReadLine());
+
+    Console.Write("Podaj wspolczynnik krzyzowania: ");
+
+    var crossRate = double.Parse(Console.ReadLine());
     
     if (success && files.IsInRange(chosenFile - 1))
     {
@@ -65,9 +73,9 @@ public class ConsoleMenu3
 
       var results = algo switch
       {
-        1 => new GeneticTranspositionMutation(graph, time, 0.8d, 0.01d, pop).Solve(0),
-        2 => new GeneticInverseMutation(graph, time, 0.8d, 0.01d, pop).Solve(0),
-        _ => new GeneticTranspositionMutation(graph, time, 0.8d, 0.01d, pop).Solve(0)
+        1 => new GeneticTranspositionMutation(graph, time, crossRate, mutRate, pop).Solve(0),
+        2 => new GeneticInverseMutation(graph, time, crossRate, mutRate, pop).Solve(0),
+        _ => new GeneticTranspositionMutation(graph, time, crossRate, mutRate, pop).Solve(0)
       };
 
       Console.WriteLine($"\nNajkrotsza droga: {results.Item1}\n");
