@@ -5,9 +5,9 @@ using TravelingSalesmanProblem.Extensions;
 
 namespace TravelingSalesmanProblem.Algorithms.Genetic;
 
-public class GeneticSwapMutation : Genetic
+public class GeneticTranspositionMutation : Genetic
 {
-  public GeneticSwapMutation(Graph graph, long time, double crossRate, double mutationRate, int populationSize) 
+  public GeneticTranspositionMutation(Graph graph, long time, double crossRate, double mutationRate, int populationSize) 
     : base(graph, time, crossRate, mutationRate, populationSize)
   {
   }

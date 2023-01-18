@@ -45,21 +45,31 @@ public class ConsoleMenu3
     }
     var success = int.TryParse(Console.ReadLine(), out var chosenFile); 
 
+    
+    Console.WriteLine("Wpisz rodzaj mutacji: ");
+    Console.WriteLine("1. Transpozycja");
+    Console.WriteLine("2. Odwracanie");
+    var algo = int.Parse(Console.ReadLine());
+    
     Console.Write("Podaj czas dzialania algorytmu: ");
     
     var time = int.Parse(Console.ReadLine());
+
+    Console.Write("Podaj rozmiar populacji: ");
+
+    var pop = int.Parse(Console.ReadLine());
     
     if (success && files.IsInRange(chosenFile - 1))
     {
       var graph = GraphFactory.ReadAtspFile(files[chosenFile - 1]);
 
-      if (graph.Size < 50) graph.Print();
+      var results = algo switch
+      {
+        1 => new GeneticTranspositionMutation(graph, time, 0.8d, 0.01d, pop).Solve(0),
+        2 => new GeneticInverseMutation(graph, time, 0.8d, 0.01d, pop).Solve(0),
+        _ => new GeneticTranspositionMutation(graph, time, 0.8d, 0.01d, pop).Solve(0)
+      };
 
-      (int, List<int>) results;
-
-
-      results = new GeneticSwapMutation(graph, time, 0.8d, 0.01d, 30).Solve(0);
-      
       Console.WriteLine($"\nNajkrotsza droga: {results.Item1}\n");
       Console.WriteLine($"Droga: {results.Item2.CombineToString()}");
       Console.WriteLine("\nWcisnij dowolny klawisz by kontynuowac...");

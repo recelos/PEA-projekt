@@ -16,10 +16,8 @@ public abstract class Genetic : ITspAlgorithm
   private readonly double _crossRate;
   private readonly double _mutationRate;
   private readonly long _time;
-  private const int TournamentSize = 4;
   
-  
-  public Genetic(
+  protected Genetic(
     Graph graph,
     long time,
     double crossRate,
@@ -54,45 +52,45 @@ public abstract class Genetic : ITspAlgorithm
     
     while (true)
     {
+      //ocena jakosci rozwiazan
       foreach (var path in population)
       {
         path.Weight = GetWeight(path.Path, start);
       }
-      for (var j = 0; j < _populationSize; j++)
+      
+      //selekcja
+      for (var i = 0; i < _populationSize; i++)
       {
-        var localResult = int.MaxValue;
-        var toAdd = new PathHolder();
+        var first = population[_rand.Next(_populationSize)];
+        var second = population[_rand.Next(_populationSize)];
+
+        var toAdd = first.Weight <= second.Weight 
+          ? new PathHolder(first.Weight, first.Path) 
+          : new PathHolder(second.Weight, second.Path);
         
-        for (var k = 0; k < TournamentSize; k++)
-        {
-          var index = _rand.Next(_populationSize);
-          if (population[index].Weight < localResult)
-          {
-            localResult = population[index].Weight;
-            toAdd =  new PathHolder(population[index].Weight, population[index].Path);
-          }
-        }
         nextPopulation.Add(toAdd);
       }
 
       population = nextPopulation;
       nextPopulation = new List<PathHolder>();
 
-      for (var j = 0; j < (int)(_crossRate * (float)_populationSize); j += 2)
+      // krzyzowanie
+      for (var i = 0; i < (int)(_crossRate * _populationSize); i++)
       {
-        population[j].Path = OrderCrossover(population[j].Path, population[j+1].Path);
-        population[j + 1].Path = OrderCrossover(population[j + 1].Path, population[j].Path);
+        population[i].Path = OrderCrossover(population[i].Path, population[i+1].Path);
       }
 
-      for (var j = 0; j < (int)(_mutationRate * (float)_populationSize) + 1; j++)
+      //mutacja
+      for (var i = 0; i < (int)(_mutationRate * _populationSize) + 1; i++)
       {
         var pathToMutateIndex = _rand.Next(_populationSize);
         Mutate(population[pathToMutateIndex].Path, _rand);
       }
 
-      foreach (var element in population)
+      //sprawdzamy, czy znalezione zostalo nowe najlepsze rozwiazanie
+      foreach (var chromosome in population)
       {
-        element.Weight = GetWeight(element.Path, start);
+        chromosome.Weight = GetWeight(chromosome.Path, start);
       }
       
       if (ShortestPath(population).Weight < bestWeight)
@@ -107,52 +105,54 @@ public abstract class Genetic : ITspAlgorithm
       }
     }
   }
-  private List<int> OrderCrossover(IReadOnlyList<int> tab1, IReadOnlyList<int> tab2)
+  private List<int> OrderCrossover(
+    IReadOnlyList<int> parent1, 
+    IReadOnlyList<int> parent2)
   {
     var startIndex = _rand.Next(_graph.Size - 2);
     var endIndex = _rand.Next(startIndex, _graph.Size - 1);
     
-    var child = new int[_graph.Size - 1];
-    child.Fill(-1);
+    var output = new int[_graph.Size - 1];
+    output.Fill(-1);
     
     for (var i = startIndex; i < endIndex + 1; i++)
     {
-      child[i] = tab1[i];
+      output[i] = parent1[i];
     }
     
-    var actualChildIndex = endIndex + 1;
-    if (actualChildIndex > tab1.Count - 1)
+    var currentIndex = endIndex + 1;
+    if (currentIndex > parent1.Count - 1)
     {
-      actualChildIndex = 0;
+      currentIndex = 0;
     }
     
-    for (var i = endIndex + 1; i < tab2.Count; i++)
+    for (var i = endIndex + 1; i < parent2.Count; i++)
     {
-      if (child.All(element => element != tab2[i]))
+      if (output.All(x => x != parent2[i]))
       {
-        child[actualChildIndex] = tab2[i];
-        actualChildIndex++;
+        output[currentIndex] = parent2[i];
+        currentIndex++;
       }
     
-      if (actualChildIndex > tab1.Count - 1)
+      if (currentIndex > parent1.Count - 1)
       {
-        actualChildIndex = 0;
+        currentIndex = 0;
       }
     }
     
-    for (var i = 0; child.Any(element => element == -1); i++)
+    for (var i = 0; output.Any(element => element == -1); i++)
     {
-      if (child.All(element => element != tab2[i]))
+      if (output.All(x => x != parent2[i]))
       {
-        child[actualChildIndex] = tab2[i];
-        actualChildIndex++;
-        if (actualChildIndex > tab1.Count - 1)
+        output[currentIndex] = parent2[i];
+        currentIndex++;
+        if (currentIndex > parent1.Count - 1)
         {
-          actualChildIndex = 0;
+          currentIndex = 0;
         }
       }
     }
-    return child.ToList();
+    return output.ToList();
   }
 
   protected abstract void Mutate(List<int> path, Random rand);
@@ -190,7 +190,6 @@ public abstract class Genetic : ITspAlgorithm
   }
   private class PathHolder
   {
-    public PathHolder() { }
     public int Weight { get; set; }
     public List<int> Path { get; set; }
     public PathHolder(int weight, List<int> path)

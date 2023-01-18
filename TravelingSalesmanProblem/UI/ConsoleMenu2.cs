@@ -65,22 +65,13 @@ public class ConsoleMenu2
 
       if (graph.Size < 50) graph.Print();
 
-      (int, List<int>) results;
-      
-      switch (algorithm)
+      (int, List<int>) results = algorithm switch
       {
-        case 1:
-          results = new TabuSearchSwap(graph, time).Solve(0);
-          break; 
-        case 2:
-          results = new TabuSearchInsert(graph, time).Solve(0);
-          break; 
-        case 3:
-          results = new TabuSearchInverse(graph, time).Solve(0);
-          break;
-        default: 
-          return;
-      }
+        1 => new TabuSearchSwap(graph, time).Solve(0),
+        2 => new TabuSearchInsert(graph, time).Solve(0),
+        3 => new TabuSearchInverse(graph, time).Solve(0),
+        _ => new TabuSearchInverse(graph, time).Solve(0)
+      };
 
       Console.WriteLine($"\nNajkrotsza droga: {results.Item1}\n");
       Console.WriteLine($"Droga: {results.Item2.CombineToString()}");

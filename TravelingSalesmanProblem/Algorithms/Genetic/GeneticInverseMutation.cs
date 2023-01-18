@@ -18,6 +18,5 @@ public class GeneticInverseMutation : Genetic
     var higherIndex = rand.Next(lowerIndex, path.Count);
     
     path.ReverseSubList(lowerIndex, higherIndex);
-    
   }
 }
