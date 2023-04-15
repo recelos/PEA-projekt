@@ -8,7 +8,7 @@ using TravelingSalesmanProblem.Extensions;
 
 namespace TravelingSalesmanProblem.UI;
 
-public class ConsoleMenu1
+public class Task1Cli
 {
   private const string GraphDirectory = "graphs";
   

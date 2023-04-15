@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using TravelingSalesmanProblem.Algorithms.TabuSearch;
+using TravelingSalesmanProblem.Algorithms.Genetic;
 using TravelingSalesmanProblem.DataStructures;
 using TravelingSalesmanProblem.Extensions;
 
 namespace TravelingSalesmanProblem.UI;
 
-public class ConsoleMenu2
+public class Task3Cli
 {
   private const string GraphDirectory = "tsgraphs";
   
@@ -42,45 +41,40 @@ public class ConsoleMenu2
     {
       Console.WriteLine($"{i++}. {file}");
     }
-
     var success = int.TryParse(Console.ReadLine(), out var chosenFile); 
+
+    
+    Console.WriteLine("Wpisz rodzaj mutacji: ");
+    Console.WriteLine("1. Transpozycja");
+    Console.WriteLine("2. Odwracanie");
+    var algo = int.Parse(Console.ReadLine());
+    
+    Console.Write("Podaj czas dzialania algorytmu: ");
+    
+    var time = int.Parse(Console.ReadLine());
+
+    Console.Write("Podaj rozmiar populacji: ");
+
+    var pop = int.Parse(Console.ReadLine());
+
+    Console.Write("Podaj wspolczynnik mutacji: ");
+
+    var mutRate = double.Parse(Console.ReadLine());
+
+    Console.Write("Podaj wspolczynnik krzyzowania: ");
+
+    var crossRate = double.Parse(Console.ReadLine());
     
     if (success && files.IsInRange(chosenFile - 1))
     {
-      Console.WriteLine("Wybierz definicje sasiedztwa: ");
-      Console.WriteLine("1. Swap");
-      Console.WriteLine("2. Insert");
-      Console.WriteLine("3. Inverse");
-
-      
-      var success2 = int.TryParse(Console.ReadLine(), out var algorithm);
-      if (!success2) return;
-
-      Console.Write("Podaj czas dzialania algorytmu: ");
-
-      var success3 = double.TryParse(Console.ReadLine(), out var time);
-      if (!success3) return;
-      
       var graph = GraphFactory.ReadAtspFile(files[chosenFile - 1]);
 
-      if (graph.Size < 50) graph.Print();
-
-      (int, List<int>) results;
-      
-      switch (algorithm)
+      var results = algo switch
       {
-        case 1:
-          results = new TabuSearchSwap(graph, time).Solve(0);
-          break; 
-        case 2:
-          results = new TabuSearchInsert(graph, time).Solve(0);
-          break; 
-        case 3:
-          results = new TabuSearchInverse(graph, time).Solve(0);
-          break;
-        default: 
-          return;
-      }
+        1 => new GeneticTranspositionMutation(graph, time, crossRate, mutRate, pop).Solve(0),
+        2 => new GeneticInverseMutation(graph, time, crossRate, mutRate, pop).Solve(0),
+        _ => new GeneticTranspositionMutation(graph, time, crossRate, mutRate, pop).Solve(0)
+      };
 
       Console.WriteLine($"\nNajkrotsza droga: {results.Item1}\n");
       Console.WriteLine($"Droga: {results.Item2.CombineToString()}");
